@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Matule</string>
+    <string name="title_activity_splash">Matule</string>
+    <string name="title_activity_greeting">Greeting</string>
+    <string name="title_activity_main_menu">MainMenu</string>
+    <string name="title_activity_scope_products">ScopeProducts</string>
+    <string name="title_activity_favourite">Favourite</string>
+    <string name="title_activity_cart">Cart</string>
+    <string name="title_activity_search">Search</string>
+    <string name="title_activity_details">Details</string>
+    <string name="title_activity_register">Register</string>
+    <string name="title_activity_forgot_password">ForgotPassword</string>
+    <string name="title_activity_otpcheck">OTPcheck</string>
+    <string name="title_activity_notifications">Notifications</string>
+    <string name="title_activity_profile">Profile</string>
+</resources>
