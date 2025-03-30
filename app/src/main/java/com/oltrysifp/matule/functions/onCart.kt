@@ -20,7 +20,7 @@ fun onCart(
                 supabase.from("cart_items").insert(
                     CartRecord(
                         productId = productID,
-                        userId = user.uid,
+                        userEmail = user.email,
                         count = 1
                     )
                 )

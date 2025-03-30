@@ -23,7 +23,7 @@ fun onFavorite(
                     supabase.from("favorite").insert(
                         FavoriteRecord(
                             productId = productID,
-                            userId = user.uid
+                            userEmail = user.email
                         )
                     )
                 }
@@ -36,7 +36,7 @@ fun onFavorite(
                     supabase.from("favorite").delete {
                         filter {
                             eq("product_id", productID)
-                            eq("user_id", user.uid)
+                            eq("user_email", user.email)
                         }
                     }
                 }

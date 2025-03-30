@@ -16,11 +16,11 @@ fun LoadFavorite(
     onLoad: () -> Unit
 ) {
     LaunchedEffect(user) {
-        if (user?.uid != null) {
+        if (user?.email != null) {
             supabase?.let {
                 val favouriteResult = supabase.from("favorite").select {
                     filter {
-                        eq("user_id", user.uid)
+                        eq("user_email", user.email)
                     }
                 }.decodeList<FavoriteRecord>()
 

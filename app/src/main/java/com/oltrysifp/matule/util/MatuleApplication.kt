@@ -27,27 +27,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltAndroidApp
-class MatuleApplication : Application(), ImageLoaderFactory {
+class MatuleApplication : Application() {
     val supabase by lazy {
         getSupabaseClient(this)
     }
-
-    override fun newImageLoader(): ImageLoader {
-        return ImageLoader.Builder(this)
-            .memoryCache {
-                MemoryCache.Builder(this)
-                    .maxSizePercent(0.20)
-                    .build()
-            }
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(5 * 1024 * 1024)
-                    .build()
-            }
-            .logger(DebugLogger())
-            .respectCacheHeaders(false)
-            .build()
+    val datastore by lazy {
+        DataStoreManager(this)
     }
 }
 
@@ -56,5 +41,8 @@ class MyAppViewModel(
 ): AndroidViewModel(application) {
     val supabase: SupabaseClient? by lazy {
         (application as MatuleApplication).supabase
+    }
+    val datastore: DataStoreManager by lazy {
+        (application as MatuleApplication).datastore
     }
 }

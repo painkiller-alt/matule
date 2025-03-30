@@ -77,21 +77,20 @@ fun NavBar(
         }
     )
     Box(
-        modifier = with (Modifier){
-            fillMaxSize()
-                .paint(
-                    painterResource(id = R.drawable.navbar),
-                    contentScale = ContentScale.FillWidth,
-                    alignment = Alignment.BottomCenter
-                )
-        },
+        modifier = Modifier
+            .fillMaxSize()
+            .paint(
+                painterResource(id = R.drawable.navbar),
+                contentScale = ContentScale.FillWidth,
+                alignment = Alignment.BottomCenter
+            ),
         contentAlignment = Alignment.BottomCenter
     ) {
         Surface(
             Modifier
                 .size(58.dp)
                 .offset(y= (-50).dp),
-            color = MaterialTheme.colorScheme.primary,
+            color = Palette.Primary,
             shape = CircleShape,
             shadowElevation = 4.dp
         ) {

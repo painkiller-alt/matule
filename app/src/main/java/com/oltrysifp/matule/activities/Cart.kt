@@ -169,7 +169,7 @@ fun CartScreen(
                                                 log("del")
                                                 supabase.from("cart_items").delete {
                                                     filter {
-                                                        eq("user_id", user.uid)
+                                                        eq("user_email", user.email)
                                                         eq("product_id", productID)
                                                     }
                                                 }
@@ -187,7 +187,7 @@ fun CartScreen(
                                                     }
                                                 ) {
                                                     filter {
-                                                        eq("user_id", user.uid)
+                                                        eq("user_email", user.email)
                                                         eq("product_id", productID)
                                                     }
                                                 }

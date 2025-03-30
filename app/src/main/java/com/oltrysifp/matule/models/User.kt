@@ -25,12 +25,10 @@ object UUIDSerializer : KSerializer<UUID> {
 data class User (
     val email: String,
     @SerialName("phone_number")
-    val phoneNumber: String?,
+    val phoneNumber: String? = null,
     @SerialName("first_name")
-    val firstName: String?,
+    val firstName: String? = null,
     @SerialName("last_name")
-    val lastName: String?,
-    val address: String?,
-    @Serializable(with = UUIDSerializer::class)
-    val uid: UUID
+    val lastName: String? = null,
+    val address: String? = null
 )

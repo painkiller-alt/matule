@@ -18,11 +18,11 @@ fun LoadCart(
     onLoad: () -> Unit
 ) {
     LaunchedEffect(user) {
-        if (user?.uid != null) {
+        if (user?.email != null) {
             supabase?.let {
                 val cartResult = supabase.from("cart_items").select {
                     filter {
-                        eq("user_id", user.uid)
+                        eq("user_email", user.email)
                     }
                 }.decodeList<CartRecord>()
 

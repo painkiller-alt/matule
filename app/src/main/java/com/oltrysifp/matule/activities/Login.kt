@@ -1,5 +1,6 @@
 package com.oltrysifp.matule.activities
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -50,11 +51,11 @@ import com.oltrysifp.matule.Palette
 import com.oltrysifp.matule.R
 import com.oltrysifp.matule.activities.ui.theme.MatuleTheme
 import com.oltrysifp.matule.composable.ButtonDefault
-import com.oltrysifp.matule.models.UUIDSerializer
-import com.oltrysifp.matule.models.User
+import com.oltrysifp.matule.composable.toast
 import com.oltrysifp.matule.util.MyAppViewModel
 import com.oltrysifp.matule.util.getSupabaseInstance
 import com.oltrysifp.matule.util.log
+import com.oltrysifp.matule.util.startActivity
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.gotrue.SessionSource
@@ -62,10 +63,7 @@ import io.github.jan.supabase.gotrue.SessionStatus
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.exception.AuthRestException
 import io.github.jan.supabase.gotrue.providers.builtin.Email
-import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encoding.Encoder
-import java.util.UUID
 
 @AndroidEntryPoint
 class Login : ComponentActivity() {
@@ -88,50 +86,14 @@ class Login : ComponentActivity() {
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(innerPadding)
                     ) {
-                        val insertCoroutine = rememberCoroutineScope()
-
                         LoginScreen(
                             onSignIn = {
                                 val intent = Intent(mContext, Greeting::class.java)
-
-                                insertCoroutine.launch {
-                                    supabase?.let {
-                                        val userEmail = supabase.auth.retrieveUserForCurrentSession().email
-                                        val userUUID = UUID.nameUUIDFromBytes(supabase.auth.retrieveUserForCurrentSession().id.toByteArray())
-
-                                        val userRetrieved = try {
-                                            userEmail?.let {
-                                                supabase.from("users").select {
-                                                    filter {
-                                                        eq("email", userEmail)
-                                                    }
-                                                }.decodeSingle<User>()
-                                            }
-                                        } catch (e: Exception) {
-                                            null
-                                        }
-
-                                        if (userRetrieved == null) {
-                                            userEmail?.let {
-                                                supabase.from("users").insert(User(
-                                                    email = userEmail,
-                                                    phoneNumber = null,
-                                                    firstName = null,
-                                                    lastName = null,
-                                                    address = null,
-                                                    uid = userUUID
-                                                ))
-                                            }
-                                        }
-
-                                        this@Login.finish()
-                                        mContext.startActivity(intent)
-                                    }
-                                }
+                                this@Login.finish()
+                                mContext.startActivity(intent)
                             },
                             onRegister = {
                                 val intent = Intent(mContext, Register::class.java)
-
                                 this@Login.finish()
                                 mContext.startActivity(intent)
                             }
@@ -150,21 +112,21 @@ fun LoginScreen(
     viewModel: MyAppViewModel = viewModel()
 ) {
     val mContext = LocalContext.current
+    val activity = (mContext as Activity)
 
     val supabase = viewModel.supabase
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
-    val onFailure = {
-        log("login failed")
-    }
-
     LaunchedEffect(Unit) {
-        supabase?.let {
-            authStateHandler(
-                supabase,
-                onSignIn = { onSignIn() }
-            )
+        supabase?.auth?.sessionStatus?.collect {
+            if (it is SessionStatus.Authenticated && it.source is SessionSource.SignIn) {
+                activity.finish()
+                startActivity(mContext, MainMenu::class.java)
+            } else if (it is SessionStatus.NotAuthenticated && it.isSignOut) {
+                toast(mContext, "Неправильные данные")
+                return@collect
+            }
         }
     }
 
@@ -278,20 +240,22 @@ fun LoginScreen(
                 )
             }
 
-            val coroutine = rememberCoroutineScope()
+            val loginCoroutine = rememberCoroutineScope()
             ButtonDefault(
                 colors = Palette.buttonPrimaryColors(),
                 onClick = {
-                    coroutine.launch {
+                    loginCoroutine.launch {
                         try {
-                            if (supabase != null) {
-                                supabase.auth.signInWith(Email) {
-                                    this.email = email.value
-                                    this.password = password.value
-                                }
+                            supabase?.auth?.signInWith(Email) {
+                                this.email = email.value
+                                this.password = password.value
                             }
                         } catch (e: AuthRestException) {
-                            onFailure()
+                            toast(mContext, "Неправильные данные")
+                            return@launch
+                        } catch (e: Exception) {
+                            toast(mContext, "Ошибка")
+                            return@launch
                         }
                     }
                 }

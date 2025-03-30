@@ -77,7 +77,6 @@ import com.oltrysifp.matule.composable.SideMenuContent
 import com.oltrysifp.matule.composable.navigation.NavBar
 import com.oltrysifp.matule.composable.navigation.NavigationItem
 import com.oltrysifp.matule.composable.navigation.navigate
-import com.oltrysifp.matule.composable.toastShort
 import com.oltrysifp.matule.data.LoadCart
 import com.oltrysifp.matule.data.LoadFavorite
 import com.oltrysifp.matule.data.LoadProducts
@@ -248,7 +247,6 @@ fun MainMenuScreen(
             user.value = it
         },
         onFailure = {
-            toastShort(mContext, "Ошибка")
         }
     )
     var favoriteLoaded by remember { mutableStateOf(false) }

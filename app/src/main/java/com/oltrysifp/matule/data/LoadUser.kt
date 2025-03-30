@@ -3,7 +3,7 @@ package com.oltrysifp.matule.data
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import com.oltrysifp.matule.composable.toastShort
+import com.oltrysifp.matule.composable.toast
 import com.oltrysifp.matule.models.User
 import com.oltrysifp.matule.util.DataStoreManager
 import com.oltrysifp.matule.util.log
@@ -28,15 +28,16 @@ fun LoadUser(
                 onSuccess(it)
             } else {
                 supabase?.let {
-
                     val userInfo: UserInfo
                     try {
                         userInfo = supabase.auth.retrieveUserForCurrentSession()
                     } catch (e: AuthRestException) {
+                        toast(context, "Ошибка")
                         log(e)
                         onFailure()
                         return@collect
                     } catch (e: Exception) {
+                        toast(context, "Ошибка")
                         log(e)
                         onFailure()
                         return@collect
@@ -53,7 +54,7 @@ fun LoadUser(
                         }.decodeSingle<User>()
 
                     } catch (e: Exception) {
-                        toastShort(context, "Ошибка")
+                        toast(context, "Ошибка")
                         log(e)
                         onFailure()
                         return@let

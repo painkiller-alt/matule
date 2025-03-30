@@ -1,5 +1,6 @@
 package com.oltrysifp.matule.activities
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -52,10 +53,13 @@ import com.oltrysifp.matule.Palette
 import com.oltrysifp.matule.R
 import com.oltrysifp.matule.activities.ui.theme.MatuleTheme
 import com.oltrysifp.matule.composable.ButtonDefault
+import com.oltrysifp.matule.composable.toast
 import com.oltrysifp.matule.models.User
 import com.oltrysifp.matule.util.MyAppViewModel
 import com.oltrysifp.matule.util.getSupabaseInstance
 import com.oltrysifp.matule.util.log
+import com.oltrysifp.matule.util.safeSupabaseOperation
+import com.oltrysifp.matule.util.startActivity
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.exception.AuthRestException
@@ -107,6 +111,8 @@ fun RegisterScreen(
     viewModel: MyAppViewModel = viewModel()
 ) {
     val mContext = LocalContext.current
+    val activity = (mContext as Activity)
+
     val name = remember { mutableStateOf("") }
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -240,48 +246,50 @@ fun RegisterScreen(
 
             Spacer(Modifier.padding(6.dp))
 
-            val signInCoroutine = rememberCoroutineScope()
+            val registerCoroutine = rememberCoroutineScope()
             ButtonDefault(
                 colors = Palette.buttonPrimaryColors(),
                 onClick = {
-                    signInCoroutine.launch {
+                    registerCoroutine.launch {
                         if (supabase != null) {
                             try {
-                                supabase.auth.signUpWith(Email) {
+                                supabase.auth.signUpWith(
+                                    Email
+                                ) {
                                     this.email = email.value
                                     this.password = password.value
                                 }
-
-                                val userEmail = supabase.auth.retrieveUserForCurrentSession().email
-                                val userUUID = UUID.nameUUIDFromBytes(supabase.auth.retrieveUserForCurrentSession().id.toByteArray())
-                                log(userUUID)
-
-                                val userRetrieved = try {
-                                    supabase.from("users").select {
-                                        filter {
-                                            eq("uid", userUUID)
-                                        }
-                                    }.decodeSingle<User>()
-                                } catch (e: Exception) {
-                                    null
-                                }
-
-                                if (userRetrieved == null) {
-                                    userEmail?.let {
-                                        supabase.from("users").insert(
-                                            User(email = userEmail, phoneNumber = null, firstName = null, lastName = null, address = null, uid = userUUID)
-                                        )
-                                    }
-                                }
-
-                                onSignUp()
-                            } catch (e: AuthWeakPasswordException) {
-                                log("AuthWeakPasswordException")
                             } catch (e: AuthRestException) {
-                                log("AuthRestException: Unable to validate email address: invalid format")
-                                // already exists here also
+                                if (e.error == "user_already_exists") {
+                                    toast(mContext, "email Занят")
+                                    return@launch
+                                } else {
+                                    toast(mContext, e.error)
+                                    return@launch
+                                }
+                            } catch (e: AuthWeakPasswordException) {
+                                toast(mContext, "Слабый пароль")
+                                return@launch
+                            } catch (e: Exception) {
+                                toast(mContext, "Ошибка")
+                                return@launch
                             }
+                        } else {
+                            toast(mContext, "Ошибка соединения")
+                            return@launch
                         }
+
+                        safeSupabaseOperation(supabase, {
+                            toast(mContext, "Ошибка")
+                            return@launch
+                        }) {
+                            from("users").insert(
+                                User(email = email.value)
+                            )
+                        }
+
+                        activity.finish()
+                        startActivity(mContext, Greeting::class.java)
                     }
                 }
             ) {

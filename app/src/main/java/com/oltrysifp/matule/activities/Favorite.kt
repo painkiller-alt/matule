@@ -32,7 +32,7 @@ import com.oltrysifp.matule.composable.DefaultLoader
 import com.oltrysifp.matule.composable.Header
 import com.oltrysifp.matule.composable.NonLazyGrid
 import com.oltrysifp.matule.composable.ProductCard
-import com.oltrysifp.matule.composable.toastShort
+import com.oltrysifp.matule.composable.toast
 import com.oltrysifp.matule.data.LoadCart
 import com.oltrysifp.matule.data.LoadUser
 import com.oltrysifp.matule.data.LoadFavorite
@@ -82,7 +82,7 @@ fun FavoriteScreen(
             user.value = it
         },
         onFailure = {
-            toastShort(mContext, "Ошибка")
+            toast(mContext, "Ошибка")
         }
     )
 
